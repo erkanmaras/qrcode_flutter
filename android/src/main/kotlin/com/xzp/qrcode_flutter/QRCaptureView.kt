@@ -8,15 +8,20 @@ import android.content.pm.PackageManager.PERMISSION_GRANTED
 import android.os.Build
 import android.os.Bundle
 import android.view.View
+import com.google.zxing.BarcodeFormat
 import com.google.zxing.ResultPoint
+import com.google.zxing.client.android.BeepManager
 import com.journeyapps.barcodescanner.BarcodeCallback
 import com.journeyapps.barcodescanner.BarcodeResult
 import com.journeyapps.barcodescanner.BarcodeView
+import com.journeyapps.barcodescanner.DefaultDecoderFactory
+import com.journeyapps.barcodescanner.camera.CameraSettings
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.PluginRegistry
 import io.flutter.plugin.platform.PlatformView
+import java.util.*
 
 class QRCaptureView(id: Int) :
         PlatformView, MethodCallHandler {
@@ -90,7 +95,7 @@ class QRCaptureView(id: Int) :
     companion object {
         const val CAMERA_REQUEST_ID = 513469796
     }
-
+   var beepManager:   BeepManager? = null ;
     var barcodeView: BarcodeView? = null
     private val activity = FlutterRegister.getActivity()
     var cameraPermissionContinuation: Runnable? = null
@@ -102,11 +107,19 @@ class QRCaptureView(id: Int) :
         channel = MethodChannel(FlutterRegister.messenger, "plugins/qr_capture/method_$id")
         channel.setMethodCallHandler(this)
         checkAndRequestPermission(null)
+        val cameraSettings=CameraSettings()
+        cameraSettings.focusMode=CameraSettings.FocusMode.CONTINUOUS
+        cameraSettings.isBarcodeSceneModeEnabled=true
+
+        this.beepManager=BeepManager(FlutterRegister.getActivity())
         val barcode = BarcodeView(FlutterRegister.getActivity())
+      //  barcode.decoderFactory= DefaultDecoderFactory( Arrays.asList(BarcodeFormat.QR_CODE),null,null,0)
+        barcode.cameraSettings=cameraSettings
         this.barcodeView = barcode
         barcode.decodeContinuous(
                 object : BarcodeCallback {
                     override fun barcodeResult(result: BarcodeResult) {
+                        beepManager?.playBeepSound();
                         channel.invokeMethod("onCaptured", result.text)
                     }
 

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:qrcode_flutter/qrcode_flutter.dart';
-import 'package:image_picker/image_picker.dart';
 
 void main() => runApp(MyApp());
 
@@ -23,6 +22,7 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
     _controller.onCapture((data) {
       print('$data');
       setState(() {
+        _controller.pause();
         _captureText = data;
       });
     });
@@ -39,20 +39,7 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
       home: Scaffold(
         appBar: AppBar(
           title: const Text('scan'),
-          actions: <Widget>[
-            FlatButton(
-              onPressed: () async {
-                PickedFile image =
-                    await ImagePicker().getImage(source: ImageSource.gallery);
-                var qrCodeResult =
-                    await QRCaptureController.getQrCodeByImagePath(image.path);
-                setState(() {
-                  _captureText = qrCodeResult.join('\n');
-                });
-              },
-              child: Text('photoAlbum', style: TextStyle(color: Colors.white)),
-            ),
-          ],
+          actions: <Widget>[],
         ),
         body: Stack(
           alignment: Alignment.center,
