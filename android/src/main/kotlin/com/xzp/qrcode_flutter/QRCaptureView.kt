@@ -3,48 +3,43 @@ package com.xzp.qrcode_flutter
 import android.Manifest
 import android.app.Activity
 import android.app.Application
-import android.content.pm.PackageManager
 import android.content.pm.PackageManager.PERMISSION_GRANTED
-import android.os.Build
 import android.os.Bundle
 import android.view.View
-import com.google.zxing.BarcodeFormat
 import com.google.zxing.ResultPoint
 import com.google.zxing.client.android.BeepManager
 import com.journeyapps.barcodescanner.BarcodeCallback
 import com.journeyapps.barcodescanner.BarcodeResult
 import com.journeyapps.barcodescanner.BarcodeView
-import com.journeyapps.barcodescanner.DefaultDecoderFactory
 import com.journeyapps.barcodescanner.camera.CameraSettings
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.PluginRegistry
 import io.flutter.plugin.platform.PlatformView
-import java.util.*
 
-class QRCaptureView(id: Int) :
-        PlatformView, MethodCallHandler {
+class QRCaptureView(id: Int) :PlatformView, MethodCallHandler {
+
     override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
-        when (call?.method) {
+        when (call.method) {
             "checkAndRequestPermission" -> {
                 checkAndRequestPermission(result)
             }
         }
 
-        when (call?.method) {
+        when (call.method) {
             "resume" -> {
                 resume()
             }
         }
 
-        when (call?.method) {
+        when (call.method) {
             "pause" -> {
                 pause()
             }
         }
 
-        when (call?.method) {
+        when (call.method) {
             "setTorchMode" -> {
                 val isOn = call.arguments as Boolean
                 barcodeView?.setTorch(isOn)
@@ -78,24 +73,22 @@ class QRCaptureView(id: Int) :
         if (hasCameraPermission()) {
             cameraPermissionContinuation?.run()
         } else {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                requestingPermission = true
-                FlutterRegister.getActivity()?.requestPermissions(
-                        arrayOf(Manifest.permission.CAMERA),
-                        CAMERA_REQUEST_ID)
-            }
+            requestingPermission = true
+            FlutterRegister.getActivity()?.requestPermissions(
+                    arrayOf(Manifest.permission.CAMERA),
+                    CAMERA_REQUEST_ID)
         }
     }
 
     private fun hasCameraPermission(): Boolean {
-        return Build.VERSION.SDK_INT < Build.VERSION_CODES.M ||
-                activity?.checkSelfPermission(Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED
+        return activity?.checkSelfPermission(Manifest.permission.CAMERA) == PERMISSION_GRANTED
     }
 
     companion object {
         const val CAMERA_REQUEST_ID = 513469796
     }
-   var beepManager:   BeepManager? = null ;
+
+    var beepManager: BeepManager? = null
     var barcodeView: BarcodeView? = null
     private val activity = FlutterRegister.getActivity()
     var cameraPermissionContinuation: Runnable? = null
@@ -107,19 +100,18 @@ class QRCaptureView(id: Int) :
         channel = MethodChannel(FlutterRegister.messenger, "plugins/qr_capture/method_$id")
         channel.setMethodCallHandler(this)
         checkAndRequestPermission(null)
-        val cameraSettings=CameraSettings()
-        cameraSettings.focusMode=CameraSettings.FocusMode.CONTINUOUS
-        cameraSettings.isBarcodeSceneModeEnabled=true
+        val cameraSettings = CameraSettings()
+        cameraSettings.focusMode = CameraSettings.FocusMode.CONTINUOUS
+        cameraSettings.isBarcodeSceneModeEnabled = true
 
-        this.beepManager=BeepManager(FlutterRegister.getActivity())
+        this.beepManager = BeepManager(FlutterRegister.getActivity())
         val barcode = BarcodeView(FlutterRegister.getActivity())
-      //  barcode.decoderFactory= DefaultDecoderFactory( Arrays.asList(BarcodeFormat.QR_CODE),null,null,0)
-        barcode.cameraSettings=cameraSettings
+        barcode.cameraSettings = cameraSettings
         this.barcodeView = barcode
         barcode.decodeContinuous(
                 object : BarcodeCallback {
                     override fun barcodeResult(result: BarcodeResult) {
-                        beepManager?.playBeepSound();
+                        beepManager?.playBeepSound()
                         channel.invokeMethod("onCaptured", result.text)
                     }
 

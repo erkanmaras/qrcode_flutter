@@ -1,5 +1,6 @@
 package com.xzp.qrcode_flutter
 
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import com.google.zxing.BinaryBitmap
 import com.google.zxing.DecodeHintType
@@ -18,28 +19,29 @@ import java.util.*
 
 class QrcodeFlutterPlugin : MethodChannel.MethodCallHandler, FlutterPlugin, ActivityAware {
     override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
-        when (call?.method) {
+        when (call.method) {
             "getQrCodeByImagePath" -> {
                 val path = call.arguments as String
-                // DecodeHintType 和EncodeHintType
+
                 val options = BitmapFactory.Options()
                 options.inJustDecodeBounds = true
                 BitmapFactory.decodeFile(path, options)
                 options.inJustDecodeBounds = false
                 options.inSampleSize = 1
-                var bitmap = BitmapFactory.decodeFile(path, options)
+                //options.inPreferredConfig = Bitmap.Config.RGB_565
+
+                val bitmap = BitmapFactory.decodeFile(path, options)
                 val width = bitmap.width
                 val height = bitmap.height
                 val pixels = IntArray(width * height)
                 bitmap.getPixels(pixels, 0, width, 0, 0, width, height)
-                var source = RGBLuminanceSource(width, height, pixels)
-                var hints: Hashtable<DecodeHintType, String> = Hashtable<DecodeHintType, String>()
-                hints.put(DecodeHintType.CHARACTER_SET, "utf-8"); // 设置二维码内容的编码
+                val source = RGBLuminanceSource(width, height, pixels)
+                val hints: Hashtable<DecodeHintType, String> = Hashtable<DecodeHintType, String>()
+                hints.put(DecodeHintType.CHARACTER_SET, "utf-8");
                 try {
-                    var result1 = QRCodeReader().decode(BinaryBitmap(HybridBinarizer(source)), hints)
+                    val result1 = QRCodeReader().decode(BinaryBitmap(HybridBinarizer(source)), hints)
                     result.success(listOf(result1.text))
                 } catch (e: Exception) {
-                    // nothing qrcode found
                     val list: List<String> = listOf()
                     result.success(list)
                 }

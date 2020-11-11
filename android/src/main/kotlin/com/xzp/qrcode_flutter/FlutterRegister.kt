@@ -1,7 +1,6 @@
 package com.xzp.qrcode_flutter
 
 import android.app.Activity
-import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
 import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.common.PluginRegistry
@@ -16,20 +15,16 @@ object FlutterRegister {
         return activity?.get()
     }
 
-    //获取权限
-    fun addRequestPermissionsResultListener(listerner: PluginRegistry.RequestPermissionsResultListener) {
+
+    fun addRequestPermissionsResultListener(listener: PluginRegistry.RequestPermissionsResultListener) {
         if (activityBinding != null) {
-            activityBinding?.addRequestPermissionsResultListener(listerner)
+            activityBinding?.addRequestPermissionsResultListener(listener)
         } else {
-            registrar?.addRequestPermissionsResultListener(listerner)
+            registrar?.addRequestPermissionsResultListener(listener)
         }
     }
 
     fun clear() {
         activity?.clear()
-//        activity?.clear()
-//        messenger = null
-//        registrar = null
-//        activityBinding = null
     }
 }
